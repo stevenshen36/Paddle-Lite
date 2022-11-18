@@ -325,6 +325,8 @@ struct ActivationParam : ParamBase {
   float threshold{6.0f};
   // gelu
   bool gelu_approximate{false};
+  // quick_gelu
+  float quick_gelu_scale{1.702};
   // softplus
   float softplus_beta{1.0f};
   float softplus_threshold{20.f};
@@ -774,6 +776,7 @@ struct AxpyParam : ParamBase {
   lite::Tensor* Bias{};
   lite::Tensor* Out{};
 };
+
 /// ----------------------- GRU unit operators ----------------------f
 struct GRUUnitParam : ParamBase {
   enum ActType { identity, sigmoid, tanh, relu };

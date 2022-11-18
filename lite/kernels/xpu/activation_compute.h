@@ -215,6 +215,16 @@ class FloorCompute : public KernelLite<TARGET(kXPU), PRECISION(kFloat)> {
   virtual ~FloorCompute() = default;
 };
 
+template <typename T, PrecisionType PType>
+class QuickGeluCompute : public KernelLite<TARGET(kXPU), PType> {
+ public:
+  using param_t = operators::ActivationParam;
+
+  virtual void Run();
+
+  virtual ~QuickGeluCompute() = default;
+};
+
 }  // namespace xpu
 }  // namespace kernels
 }  // namespace lite

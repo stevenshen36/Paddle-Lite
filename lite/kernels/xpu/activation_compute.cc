@@ -58,6 +58,18 @@ void GeluCompute<T, PType>::Run() {
 }
 
 template <typename T, PrecisionType PType>
+void QuickGeluCompute<T, PType>::Run() {
+  auto& param = this->template Param<param_t>();
+  auto& ctx = this->ctx_->template As<XPUContext>();
+
+  int r = xdnn::quick_gelu(ctx.GetRawContext(),
+                           param.X->template data<T>(),
+                           param.Out->template mutable_data<T>(TARGET(kXPU)),
+                           param.X->numel());
+  CHECK_EQ(r, 0);
+}
+
+template <typename T, PrecisionType PType>
 void TanhCompute<T, PType>::Run() {
   auto& param = this->template Param<param_t>();
   auto& ctx = this->ctx_->template As<XPUContext>();
@@ -329,6 +341,19 @@ REGISTER_LITE_KERNEL(gelu, kXPU, kFloat, kNCHW, geluFP32, def)
 using gelu_fp16 =
     paddle::lite::kernels::xpu::GeluCompute<float16, PRECISION(kFP16)>;
 REGISTER_LITE_KERNEL(gelu, kXPU, kFP16, kNCHW, geluFP16, geluFP16)
+    .BindInput("X", {LiteType::GetTensorTy(TARGET(kXPU), PRECISION(kFP16))})
+    .BindOutput("Out", {LiteType::GetTensorTy(TARGET(kXPU), PRECISION(kFP16))})
+    .Finalize();
+
+using quick_gelu_FP32 =
+    paddle::lite::kernels::xpu::QuickGeluCompute<float, PRECISION(kFloat)>;
+using qucik_gelu_FP16 =
+    paddle::lite::kernels::xpu::QuickGeluCompute<float16, PRECISION(kFP16)>;
+REGISTER_LITE_KERNEL(quick_gelu, kXPU, kFloat, kNCHW, quick_gelu_FP32, def)
+    .BindInput("X", {LiteType::GetTensorTy(TARGET(kXPU))})
+    .BindOutput("Out", {LiteType::GetTensorTy(TARGET(kXPU))})
+    .Finalize();
+REGISTER_LITE_KERNEL(quick_gelu, kXPU, kFP16, kNCHW, qucik_gelu_FP16, geluFP16)
     .BindInput("X", {LiteType::GetTensorTy(TARGET(kXPU), PRECISION(kFP16))})
     .BindOutput("Out", {LiteType::GetTensorTy(TARGET(kXPU), PRECISION(kFP16))})
     .Finalize();

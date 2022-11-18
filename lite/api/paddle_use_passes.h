@@ -39,6 +39,7 @@ USE_MIR_PASS(lite_squeeze2_matmul_fuse_pass);
 USE_MIR_PASS(lite_reshape2_matmul_fuse_pass);
 USE_MIR_PASS(lite_matmul_fuse_pass);
 USE_MIR_PASS(lite_fc_fuse_pass);
+USE_MIR_PASS(lite_quick_gelu_fuse_pass);
 USE_MIR_PASS(lite_matmul_element_add_fuse_pass);
 USE_MIR_PASS(lite_shuffle_channel_fuse_pass);
 USE_MIR_PASS(lite_transpose_softmax_transpose_fuse_pass);

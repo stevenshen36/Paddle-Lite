@@ -99,6 +99,11 @@ bool ActivationOp::AttachImpl(const cpp::OpDesc& opdesc, lite::Scope* scope) {
   } else if (opdesc.Type() == "mish") {
     param_.active_type = lite_api::ActivationType::kMish;
     param_.threshold = opdesc.GetAttr<float>("threshold");
+  } else if(opdesc.Type() == "quick_gelu") {
+    param_.active_type = lite_api::ActivationType::kQuickGelu;
+    if (opdesc.HasAttr("scale")) {
+      param_.quick_gelu_scale = opdesc.GetAttr<float>("scale");
+    }
   }
 
   VLOG(4) << "opdesc.Type():" << opdesc.Type();
@@ -124,6 +129,7 @@ REGISTER_LITE_OP(sqrt, paddle::lite::operators::ActivationOp);
 REGISTER_LITE_OP(rsqrt, paddle::lite::operators::ActivationOp);
 REGISTER_LITE_OP(softsign, paddle::lite::operators::ActivationOp);
 REGISTER_LITE_OP(gelu, paddle::lite::operators::ActivationOp);
+REGISTER_LITE_OP(quick_gelu, paddle::lite::operators::ActivationOp);
 REGISTER_LITE_OP(hard_swish, paddle::lite::operators::ActivationOp);
 REGISTER_LITE_OP(reciprocal, paddle::lite::operators::ActivationOp);
 REGISTER_LITE_OP(mish, paddle::lite::operators::ActivationOp);

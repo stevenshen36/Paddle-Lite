@@ -144,6 +144,7 @@ enum class ActivationType : int {
   kSoftPlus = 21,
   kMish = 22,
   NUM = 23,
+  kQuickGelu = 24,
 };
 
 static size_t PrecisionTypeLength(PrecisionType type) {
