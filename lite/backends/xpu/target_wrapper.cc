@@ -19,7 +19,7 @@
 
 namespace paddle {
 namespace lite {
-
+size_t API_L3_SIZE_RES = 0;
 XPUL3CacheBlock* TargetWrapperXPU::CreateL3CacheBlock() {
   if (xpu_runtime_ptr == nullptr) {
     return nullptr;
@@ -65,13 +65,35 @@ void TargetWrapperXPU::ScatterL3Cache(
   }
   CHECK(xpu_runtime_ptr->xpu_l3_planner);
   size_t total_block_l3_size = 0, xdnn_ctx_l3_size = 0;
-  xpu_runtime_ptr->xpu_l3_planner->set_current_query_shape(query_shape,
-                                                           l3_size);
+  const char* API_L3_SIZE_RES_CHAR = std::getenv("API_L3_SIZE_RES");
+  API_L3_SIZE_RES = (API_L3_SIZE_RES_CHAR && atoi(API_L3_SIZE_RES_CHAR) > 0)
+                        ? atoi(API_L3_SIZE_RES_CHAR)
+                        : 0;
+  size_t api_l3_reserve = API_L3_SIZE_RES;
+  // When set API_L3_SIZE_RES, be careful that it should not be greater than
+  // l3_size.
+  CHECK(l3_size > api_l3_reserve);
+  int8_t* api_l3_ptr =
+      reinterpret_cast<int8_t*>(l3_ptr) + l3_size - api_l3_reserve;
+  size_t lite_l3_left = l3_size - api_l3_reserve;
+
+  if (API_L3_SIZE_RES) {
+    xpu_runtime_ptr->xpu_l3_planner->set_current_query_shape(query_shape,
+                                                             lite_l3_left);
+  } else {
+    xpu_runtime_ptr->xpu_l3_planner->set_current_query_shape(query_shape,
+                                                             l3_size);
+  }
   std::vector<size_t>* plan =
       xpu_runtime_ptr->xpu_l3_planner->get_current_plan();
   if (plan == nullptr) {
-    XPU_CALL(xpu_runtime_ptr->xpu_tls_raw_ctx->GetXDNNContext()->_l3_mgr.set(
-        l3_ptr, l3_size));
+    if (API_L3_SIZE_RES) {
+      XPU_CALL(xpu_runtime_ptr->xpu_tls_raw_ctx->GetXDNNContext()->_l3_mgr.set(
+          api_l3_ptr, api_l3_reserve));
+    } else {
+      XPU_CALL(xpu_runtime_ptr->xpu_tls_raw_ctx->GetXDNNContext()->_l3_mgr.set(
+          l3_ptr, l3_size));
+    }
     VLOG(3) << "XDNN CTX L3 Size is "
             << xpu_runtime_ptr->xpu_tls_raw_ctx->GetXDNNContext()
                    ->_l3_mgr.get_size()
@@ -88,10 +110,19 @@ void TargetWrapperXPU::ScatterL3Cache(
         total_block_l3_size += cur_block_size;
       }
     }
-    if (xdnn_ctx_l3_size > 0) {
-      XPU_CALL(xpu_runtime_ptr->xpu_tls_raw_ctx->GetXDNNContext()->_l3_mgr.set(
-          reinterpret_cast<int8_t*>(l3_ptr) + l3_size - xdnn_ctx_l3_size,
-          xdnn_ctx_l3_size));
+    if (API_L3_SIZE_RES) {
+      if (api_l3_reserve > 0) {
+        XPU_CALL(
+            xpu_runtime_ptr->xpu_tls_raw_ctx->GetXDNNContext()->_l3_mgr.set(
+                api_l3_ptr, api_l3_reserve));
+      }
+    } else {
+      if (xdnn_ctx_l3_size > 0) {
+        XPU_CALL(
+            xpu_runtime_ptr->xpu_tls_raw_ctx->GetXDNNContext()->_l3_mgr.set(
+                reinterpret_cast<int8_t*>(l3_ptr) + l3_size - xdnn_ctx_l3_size,
+                xdnn_ctx_l3_size));
+      }
     }
     VLOG(3) << "XDNN CTX L3 Size is "
             << xpu_runtime_ptr->xpu_tls_raw_ctx->GetXDNNContext()
@@ -147,9 +178,15 @@ void TargetWrapperXPU::FreeL3Cache() {
           nullptr, 0));
     }
     if (xpu_runtime_ptr->xpu_local_l3_autotune) {
-      xpu_runtime_ptr->xpu_l3_planner->run_autotune(
-          xpu_runtime_ptr->xpu_l3_block_dict,
-          xpu_runtime_ptr->xpu_local_l3_size);
+      if (API_L3_SIZE_RES) {
+        xpu_runtime_ptr->xpu_l3_planner->run_autotune(
+            xpu_runtime_ptr->xpu_l3_block_dict,
+            xpu_runtime_ptr->xpu_local_l3_size - API_L3_SIZE_RES);
+      } else {
+        xpu_runtime_ptr->xpu_l3_planner->run_autotune(
+            xpu_runtime_ptr->xpu_l3_block_dict,
+            xpu_runtime_ptr->xpu_local_l3_size);
+      }
     }
   } else if (need_l3_mutex && TargetWrapperXPU::IsSharedL3Created()) {
     XPU_CALL(xpu_wait(TargetWrapperXPU::get_xpu_stream()));
