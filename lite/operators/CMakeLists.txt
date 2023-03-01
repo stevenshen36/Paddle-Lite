@@ -258,6 +258,7 @@ add_operator(__xpu__multihead_cross_attn_op extra SRCS __xpu__multihead_cross_at
 add_operator(__xpu__geglu_op extra SRCS __xpu__geglu_op.cc)
 add_operator(__xpu__spatial_transformer_resblock_op extra SRCS __xpu__spatial_transformer_resblock_op.cc)
 
+
 if(XPU_WITH_XFT)
     add_operator(fusion_decoding_op extra SRCS fusion_decoding_op.cc)
     add_operator(fusion_unified_decoding_op extra SRCS fusion_unified_decoding_op.cc)
