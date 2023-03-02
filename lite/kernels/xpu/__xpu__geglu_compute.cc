@@ -85,7 +85,7 @@ void XPUGegluCompute<InType, PType>::PrepareForRun() {
 
 template <typename InType, PrecisionType PType>
 void XPUGegluCompute<InType, PType>::Run() {
-  LOG(3) << "The compute of this op will be adapted to XFT interface later on.";
+  VLOG(3) << "The compute of this op will be adapted to XFT interface later on.";
   // TODO(shenyijun): The compute of this op will be adapted to XFT interface
   // later on.
   // auto& param = this->template Param<param_t>();

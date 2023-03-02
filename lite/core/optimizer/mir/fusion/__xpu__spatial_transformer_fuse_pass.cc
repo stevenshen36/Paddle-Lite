@@ -212,45 +212,45 @@ class SpatialTransformerfuser : public FuseBase {
             ->AsIntermediate()
             ->assert_is_op_output("elementwise_add", "Out")
             ->assert_is_op_input("elementwise_add", "Y")
-            ->assert_is_op_input("__xpu__spatial_transformer_geglu", "Input");
+            ->assert_is_op_input("__xpu__geglu", "Input");
 
     // geglu
     auto* __xpu__spatial_transformer_geglu =
-        OpNode("__xpu__spatial_transformer_geglu",
-               "__xpu__spatial_transformer_geglu")
+        OpNode("__xpu__geglu",
+               "__xpu__geglu")
             ->AsIntermediate();
     auto* __xpu__spatial_transformer_geglu_fcbias0 =
-        VarNode("__xpu__spatial_transformer_geglu_fcbias0")
+        VarNode("__xpu__geglu_fcbias0")
             ->assert_is_op_nth_input(
-                "__xpu__spatial_transformer_geglu", "FCBias", 0)
+                "__xpu__geglu", "FCBias", 0)
             ->AsInput();
     auto* __xpu__spatial_transformer_geglu_fcbias1 =
-        VarNode("__xpu__spatial_transformer_geglu_fcbias1")
+        VarNode("__xpu__geglu_fcbias1")
             ->assert_is_op_nth_input(
-                "__xpu__spatial_transformer_geglu", "FCBias", 1)
+                "__xpu__geglu", "FCBias", 1)
             ->AsInput();
     auto* __xpu__spatial_transformer_geglu_lnbias =
-        VarNode("__xpu__spatial_transformer_geglu_lnbias")
-            ->assert_is_op_input("__xpu__spatial_transformer_geglu", "LNBias")
+        VarNode("__xpu__geglu_lnbias")
+            ->assert_is_op_input("__xpu__geglu", "LNBias")
             ->AsInput();
     auto* __xpu__spatial_transformer_geglu_lnscale =
-        VarNode("__xpu__spatial_transformer_geglu_lnscale")
-            ->assert_is_op_input("__xpu__spatial_transformer_geglu", "LNScale")
+        VarNode("__xpu__geglu_lnscale")
+            ->assert_is_op_input("__xpu__geglu", "LNScale")
             ->AsInput();
     auto* __xpu__spatial_transformer_geglu_fcweight0 =
-        VarNode("__xpu__spatial_transformer_geglu_fcweight0")
+        VarNode("__xpu__geglu_fcweight0")
             ->assert_is_op_nth_input(
-                "__xpu__spatial_transformer_geglu", "FCWeight", 0)
+                "__xpu__geglu", "FCWeight", 0)
             ->AsInput();
     auto* __xpu__spatial_transformer_geglu_fcweight1 =
-        VarNode("__xpu__spatial_transformer_geglu_fcweight1")
+        VarNode("__xpu__geglu_fcweight1")
             ->assert_is_op_nth_input(
-                "__xpu__spatial_transformer_geglu", "FCWeight", 1)
+                "__xpu__geglu", "FCWeight", 1)
             ->AsInput();
     auto* __xpu__spatial_transformer_geglu_output =
-        VarNode("__xpu__spatial_transformer_geglu_output")
+        VarNode("__xpu__geglu_output")
             ->AsIntermediate()
-            ->assert_is_op_output("__xpu__spatial_transformer_geglu", "Output")
+            ->assert_is_op_output("__xpu__geglu", "Output")
             ->assert_is_op_input("elementwise_add", "X");
     auto* residual_add3 =
         OpNode("elementwise_add3", "elementwise_add")->AsIntermediate();
@@ -376,7 +376,7 @@ class SpatialTransformerfuser : public FuseBase {
     auto* mhca_op_info =
         matched.at("__xpu__multihead_cross_attn")->stmt()->op_info();
     auto* geglu_op_info =
-        matched.at("__xpu__spatial_transformer_geglu")->stmt()->op_info();
+        matched.at("__xpu__geglu")->stmt()->op_info();
 
     std::vector<std::string> fc_weight_names;
     for (const auto& name : mhsa_op_info->Input("FCWeight")) {
@@ -531,12 +531,12 @@ class SpatialTransformerfuser : public FuseBase {
         "__xpu__multihead_cross_attn_fcweight1",
         "__xpu__multihead_cross_attn_fcweight2",
         "__xpu__multihead_cross_attn_fcweight3",
-        "__xpu__spatial_transformer_geglu_fcbias0",
-        "__xpu__spatial_transformer_geglu_fcbias1",
-        "__xpu__spatial_transformer_geglu_lnbias",
-        "__xpu__spatial_transformer_geglu_lnscale",
-        "__xpu__spatial_transformer_geglu_fcweight0",
-        "__xpu__spatial_transformer_geglu_fcweight1",
+        "__xpu__geglu_fcbias0",
+        "__xpu__geglu_fcbias1",
+        "__xpu__geglu_lnbias",
+        "__xpu__geglu_lnscale",
+        "__xpu__geglu_fcweight0",
+        "__xpu__geglu_fcweight1",
         "post__xpu__conv2d_bias",
         "post__xpu__conv2d_filter"};
 
